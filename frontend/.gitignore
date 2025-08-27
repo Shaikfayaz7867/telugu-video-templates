@@ -1,0 +1,34 @@
+# Node
+node_modules/
+
+# Next.js
+.next/
+out/
+.next/cache/
+.vercel/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# Testing/coverage
+coverage/
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+
+# Misc
+*.pid
+*.seed
+*.tgz
