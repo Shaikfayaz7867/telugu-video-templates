@@ -20,7 +20,6 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 // Bind to localhost by default; allow override for deployments
-const HOST = process.env.HOST || '127.0.0.1';
 
 // Middleware
 // Trust proxy only when explicitly enabled (useful on Render/NGINX)
@@ -43,7 +42,7 @@ app.use(morgan('dev'));
 
 // Configure multer for memory storage (for S3 upload)
 const storage = multer.memoryStorage();
-const upload = multer({ 
+const upload = multer({
   storage,
   limits: {
     fileSize: 100 * 1024 * 1024, // 100MB limit
@@ -103,15 +102,15 @@ app.get('/api/videos', async (req, res) => {
 app.get('/api/videos/:id/download', async (req, res) => {
   try {
     const video = await Video.findById(req.params.id);
-    
+
     if (!video) {
       return res.status(404).json({ message: 'Video not found' });
     }
-    
+
     // Generate signed URL valid for 10 minutes
     const signedUrl = await generateSignedUrl(video.key, 600);
-    
-    res.json({ 
+
+    res.json({
       url: signedUrl,
       filename: video.name,
       mimeType: video.mimeType
@@ -128,24 +127,24 @@ app.post('/api/videos', upload.single('video'), async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: 'No video file uploaded' });
     }
-    
+
     const { name } = req.body;
-    
+
     if (!name) {
       return res.status(400).json({ message: 'Video name is required' });
     }
-    
+
     // Generate unique filename for S3
     const fileExtension = path.extname(req.file.originalname);
     const key = `videos/${uuidv4()}${fileExtension}`;
-    
+
     // Upload to S3
     await uploadFileToS3(
       req.file.buffer,
       key,
       req.file.mimetype
     );
-    
+
     // Create video document in MongoDB
     const newVideo = new Video({
       name,
@@ -153,9 +152,9 @@ app.post('/api/videos', upload.single('video'), async (req, res) => {
       size: req.file.size,
       mimeType: req.file.mimetype
     });
-    
+
     await newVideo.save();
-    
+
     res.status(201).json({
       message: 'Video uploaded successfully',
       video: newVideo
@@ -222,10 +221,11 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ message: err.message || 'Server error' });
 });
 
-// Start server: bind to HOST (localhost by default)
-const server = app.listen(PORT, HOST, () => {
-  console.log(`Server running on http://${HOST}:${PORT}`);
+// Start server: bind to 0.0.0.0 so Render can detect the port
+const server = app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
+
 
 // Graceful shutdown
 const shutdown = async (signal) => {
