@@ -6,6 +6,8 @@ import { VideoCard } from "@/components/video-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Film, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -15,6 +17,7 @@ export default function HomePage() {
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState("");
   const loaderRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
 
   // Debounce search input
   useEffect(() => {
@@ -97,6 +100,16 @@ export default function HomePage() {
           )}
         </div>
       </div>
+      {/* Empty state */}
+      {!loading && videos.length === 0 && (
+        <div className="mt-16 flex flex-col items-center justify-center text-center">
+          <p className="mb-4 text-muted-foreground">No videos yet — you can upload one.</p>
+          <Button onClick={() => router.push("/upload")}>
+            Upload a video
+          </Button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {videos.map((v) => (
           <VideoCard key={v._id} video={v} />
